@@ -1,0 +1,9 @@
+{
+  "projectId": "8840582244451242051",
+  "projectTitle": "Web-Render App",
+  "screens": {
+    "home": "63dfc4ea462c4cd69ea42573f7ab3685",
+    "editor": "82e9cab3b9104e9bb04e4b8e5a17d975",
+    "preview": "7c80aa2bd0c1496690bd1d4de88c6fd7"
+  }
+}
