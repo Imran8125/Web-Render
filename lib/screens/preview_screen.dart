@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/web_app.dart';
 import '../theme/app_theme.dart';
 import 'preview_webview_native.dart' if (dart.library.html) 'preview_webview_web.dart';
+import 'storage_screen.dart';
 
 class PreviewScreen extends StatefulWidget {
   final WebApp app;
@@ -38,6 +39,8 @@ class _PreviewScreenState extends State<PreviewScreen> {
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             Text(
               'Preview',
@@ -53,6 +56,17 @@ class _PreviewScreenState extends State<PreviewScreen> {
             icon: const Icon(Icons.refresh_rounded),
             onPressed: _refresh,
             tooltip: 'Refresh',
+            color: AppTheme.lightSlate,
+          ),
+          IconButton(
+            icon: const Icon(Icons.storage_rounded),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => StorageScreen(app: widget.app),
+              ),
+            ),
+            tooltip: 'App Storage',
             color: AppTheme.lightSlate,
           ),
           IconButton(
@@ -111,6 +125,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
             child: buildPreviewWidget(
               html: widget.app.htmlCode,
               onLog: _addLog,
+              appId: widget.app.id,
               key: ValueKey('preview_${widget.app.id}'),
             ),
           ),
@@ -186,7 +201,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        height: _consoleExpanded ? 200 : 40,
+        height: _consoleExpanded ? 201 : 41,
         decoration: BoxDecoration(
           color: AppTheme.editorBg,
           border: Border(

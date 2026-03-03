@@ -5,9 +5,11 @@ import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 
 /// Builds a web preview widget using an iframe to render HTML content.
+/// On web, iframes already have access to real localStorage.
 Widget buildPreviewWidget({
   required String html,
   required void Function(String) onLog,
+  required String appId,
   Key? key,
 }) {
   return _WebPreview(key: key, html: html, onLog: onLog);

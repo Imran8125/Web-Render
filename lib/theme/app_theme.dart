@@ -2,22 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Core colors from Stitch design
-  static const Color deepCharcoal = Color(0xFF1A1A2E);
-  static const Color darkNavy = Color(0xFF16213E);
-  static const Color elevatedDark = Color(0xFF0F3460);
-  static const Color electricCyan = Color(0xFF00D2FF);
-  static const Color vibrantPurple = Color(0xFF7B2FF7);
-  static const Color pureWhite = Color(0xFFFFFFFF);
-  static const Color lightSlate = Color(0xFF94A3B8);
-  static const Color editorBg = Color(0xFF0D1117);
+  // Core colors from Stitch design (Nano Banana Redesign)
+  static const Color deepCharcoal = Color(0xFF111110); // Very dark slate/black
+  static const Color darkNavy = Color(0xFF1A1A18); // Surface variant
+  static const Color elevatedDark = Color(0xFF242421); // Elevated surface
+  static const Color electricCyan = Color(0xFFFFD700); // Nano Banana Yellow
+  static const Color vibrantPurple = Color(0xFFF59E0B); // Ripe accent orange
+  static const Color pureWhite = Color(0xFFFDFDFB); // Off-white
+  static const Color lightSlate = Color(0xFFA1A19A); // Warm slate
+  static const Color editorBg = Color(0xFF0A0A09); // Dark editor bg
 
   // Syntax highlighting colors
   static const Color syntaxCoral = Color(0xFFFF6B6B);
   static const Color syntaxSkyBlue = Color(0xFF38BDF8);
-  static const Color syntaxAmber = Color(0xFFFBBF24);
+  static const Color syntaxAmber = Color(0xFFFACC15);
   static const Color syntaxEmerald = Color(0xFF34D399);
-  static const Color syntaxGray = Color(0xFF64748B);
+  static const Color syntaxGray = Color(0xFF71716A);
 
   static ThemeData get darkTheme {
     return ThemeData(

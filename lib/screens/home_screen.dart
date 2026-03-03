@@ -6,6 +6,7 @@ import '../services/app_state.dart';
 import '../theme/app_theme.dart';
 import 'editor_screen.dart';
 import 'preview_screen.dart';
+import 'storage_screen.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -330,6 +331,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 context,
                                 MaterialPageRoute(builder: (_) => EditorScreen(appId: app.id)),
                               );
+                            } else if (value == 'storage') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => StorageScreen(app: app)),
+                              );
                             } else if (value == 'delete') {
                               _showDeleteDialog(app);
                             }
@@ -343,6 +349,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(width: 12),
                                   Text(
                                     'Edit',
+                                    style: GoogleFonts.spaceGrotesk(color: AppTheme.pureWhite),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'storage',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.storage_rounded, color: AppTheme.lightSlate, size: 20),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Storage',
                                     style: GoogleFonts.spaceGrotesk(color: AppTheme.pureWhite),
                                   ),
                                 ],
@@ -386,11 +405,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontSize: 12,
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 4),
                   // Code preview
-                  Flexible(
+                  Expanded(
                     child: Container(
+                      width: double.infinity,
                       padding: const EdgeInsets.all(8),
+                      clipBehavior: Clip.hardEdge,
                       decoration: BoxDecoration(
                         color: AppTheme.editorBg.withAlpha(180),
                         borderRadius: BorderRadius.circular(8),
