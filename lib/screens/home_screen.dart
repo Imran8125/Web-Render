@@ -6,6 +6,8 @@ import '../services/app_state.dart';
 import '../theme/app_theme.dart';
 import 'editor_screen.dart';
 import 'preview_screen.dart';
+import 'preview_webview_native.dart' if (dart.library.html) 'preview_webview_web.dart';
+import 'settings_screen.dart';
 import 'storage_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -42,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppTheme.lightSlate),
+              style: TextStyle(color: AppTheme.lightSilver),
             ),
           ),
           FilledButton(
@@ -75,19 +77,19 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Delete App'),
         content: Text(
           'Are you sure you want to delete "${app.title}"?',
-          style: const TextStyle(color: AppTheme.lightSlate),
+          style: const TextStyle(color: AppTheme.lightSilver),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppTheme.lightSlate),
+              style: TextStyle(color: AppTheme.lightSilver),
             ),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.syntaxCoral,
+              backgroundColor: AppTheme.errorColor,
             ),
             onPressed: () {
               context.read<AppState>().deleteApp(app.id);
@@ -121,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: AppTheme.lightSlate),
+            icon: const Icon(Icons.search, color: AppTheme.lightSilver),
             onPressed: () {},
             tooltip: 'Search',
           ),
@@ -129,9 +131,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Consumer<AppState>(
         builder: (context, state, child) {
+          if (_selectedNavIndex == 2) {
+            return const SettingsScreen();
+          }
           if (state.isLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: AppTheme.electricCyan),
+              child: CircularProgressIndicator(color: AppTheme.primaryWhite),
             );
           }
           return _buildBody(state);
@@ -142,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.electricCyan.withAlpha(80),
+              color: AppTheme.primaryWhite.withAlpha(80),
               blurRadius: 20,
               spreadRadius: 2,
             ),
@@ -231,13 +236,13 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppTheme.elevatedDark.withAlpha(120),
+              color: AppTheme.elevatedGray.withAlpha(120),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.code_rounded,
               size: 64,
-              color: AppTheme.electricCyan,
+              color: AppTheme.primaryWhite,
             ),
           ),
           const SizedBox(height: 24),
@@ -253,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             'Create your first HTML/CSS/JS app',
             style: GoogleFonts.spaceGrotesk(
-              color: AppTheme.lightSlate,
+              color: AppTheme.lightSilver,
               fontSize: 14,
             ),
           ),
@@ -286,8 +291,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppTheme.elevatedDark.withAlpha(200),
-                  AppTheme.darkNavy.withAlpha(160),
+                  AppTheme.elevatedGray.withAlpha(200),
+                  AppTheme.surfaceDark.withAlpha(160),
                 ],
               ),
               borderRadius: BorderRadius.circular(16),
@@ -318,11 +323,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           highlightColor: Colors.transparent,
                         ),
                         child: PopupMenuButton<String>(
-                          icon: const Icon(Icons.more_horiz, color: AppTheme.lightSlate),
-                          color: AppTheme.deepCharcoal,
+                          icon: const Icon(Icons.more_horiz, color: AppTheme.lightSilver),
+                          color: AppTheme.deepBlack,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: AppTheme.electricCyan.withAlpha(30)),
+                            side: BorderSide(color: AppTheme.primaryWhite.withAlpha(30)),
                           ),
                           offset: const Offset(0, 40),
                           onSelected: (value) {
@@ -345,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               value: 'edit',
                               child: Row(
                                 children: [
-                                  const Icon(Icons.edit, color: AppTheme.lightSlate, size: 20),
+                                  const Icon(Icons.edit, color: AppTheme.lightSilver, size: 20),
                                   const SizedBox(width: 12),
                                   Text(
                                     'Edit',
@@ -358,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               value: 'storage',
                               child: Row(
                                 children: [
-                                  const Icon(Icons.storage_rounded, color: AppTheme.lightSlate, size: 20),
+                                  const Icon(Icons.storage_rounded, color: AppTheme.lightSilver, size: 20),
                                   const SizedBox(width: 12),
                                   Text(
                                     'Storage',
@@ -371,11 +376,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               value: 'delete',
                               child: Row(
                                 children: [
-                                  const Icon(Icons.delete, color: AppTheme.syntaxCoral, size: 20),
+                                  const Icon(Icons.delete, color: AppTheme.errorColor, size: 20),
                                   const SizedBox(width: 12),
                                   Text(
                                     'Delete',
-                                    style: GoogleFonts.spaceGrotesk(color: AppTheme.syntaxCoral),
+                                    style: GoogleFonts.spaceGrotesk(color: AppTheme.errorColor),
                                   ),
                                 ],
                               ),
@@ -401,7 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     _timeAgo(app.updatedAt),
                     style: GoogleFonts.spaceGrotesk(
-                      color: AppTheme.lightSlate,
+                      color: AppTheme.lightSilver,
                       fontSize: 12,
                     ),
                   ),
@@ -410,22 +415,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(8),
                       clipBehavior: Clip.hardEdge,
                       decoration: BoxDecoration(
                         color: AppTheme.editorBg.withAlpha(180),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(
-                        app.htmlCode.length > 60
-                            ? '${app.htmlCode.substring(0, 60)}...'
-                            : app.htmlCode,
-                        style: GoogleFonts.jetBrainsMono(
-                          color: AppTheme.syntaxCoral,
-                          fontSize: 9,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          buildPreviewWidget(
+                            html: app.htmlCode,
+                            onLog: (_) {},
+                            appId: app.id,
+                            key: ValueKey('preview_card_${app.id}'),
+                          ),
+                          Container(color: Colors.transparent),
+                        ],
                       ),
                     ),
                   ),
@@ -442,20 +447,23 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTheme.elevatedDark.withAlpha(150),
+        color: AppTheme.elevatedGray.withAlpha(150),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.lightSlate.withAlpha(40)),
+        border: Border.all(color: AppTheme.lightSilver.withAlpha(40)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppTheme.electricCyan),
+          Icon(icon, size: 14, color: AppTheme.primaryWhite),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: GoogleFonts.spaceGrotesk(
-              color: AppTheme.lightSlate,
-              fontSize: 12,
+          Flexible(
+            child: Text(
+              label,
+              style: GoogleFonts.spaceGrotesk(
+                color: AppTheme.lightSilver,
+                fontSize: 12,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

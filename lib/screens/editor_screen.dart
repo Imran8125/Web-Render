@@ -69,7 +69,7 @@ class _EditorScreenState extends State<EditorScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Saved!', style: GoogleFonts.spaceGrotesk()),
-          backgroundColor: AppTheme.elevatedDark,
+          backgroundColor: AppTheme.elevatedGray,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -115,7 +115,7 @@ class _EditorScreenState extends State<EditorScreen> {
     if (_app == null) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: AppTheme.electricCyan),
+          child: CircularProgressIndicator(color: AppTheme.primaryWhite),
         ),
       );
     }
@@ -151,11 +151,11 @@ class _EditorScreenState extends State<EditorScreen> {
                 icon: const Icon(Icons.save_rounded),
                 onPressed: _saveApp,
                 tooltip: 'Save',
-                color: AppTheme.electricCyan,
+                color: AppTheme.primaryWhite,
               ),
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: AppTheme.lightSlate),
-              color: AppTheme.elevatedDark,
+              icon: const Icon(Icons.more_vert, color: AppTheme.lightSilver),
+              color: AppTheme.elevatedGray,
               onSelected: (value) {
                 if (value == 'save') _saveApp();
               },
@@ -164,7 +164,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   value: 'save',
                   child: Row(
                     children: [
-                      Icon(Icons.save, color: AppTheme.lightSlate, size: 20),
+                      Icon(Icons.save, color: AppTheme.lightSilver, size: 20),
                       SizedBox(width: 8),
                       Text('Save', style: TextStyle(color: AppTheme.pureWhite)),
                     ],
@@ -189,7 +189,7 @@ class _EditorScreenState extends State<EditorScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.electricCyan.withAlpha(80),
+                color: AppTheme.primaryWhite.withAlpha(80),
                 blurRadius: 20,
                 spreadRadius: 2,
               ),
@@ -273,9 +273,9 @@ class _EditorScreenState extends State<EditorScreen> {
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: AppTheme.darkNavy,
+        color: AppTheme.surfaceDark,
         border: Border(
-          top: BorderSide(color: AppTheme.lightSlate.withAlpha(30)),
+          top: BorderSide(color: AppTheme.lightSilver.withAlpha(30)),
         ),
       ),
       child: ListView.separated(
@@ -286,7 +286,7 @@ class _EditorScreenState extends State<EditorScreen> {
         itemBuilder: (context, index) {
           final char = _quickInsertChars[index];
           return Material(
-            color: AppTheme.elevatedDark,
+            color: AppTheme.elevatedGray,
             borderRadius: BorderRadius.circular(8),
             child: InkWell(
               borderRadius: BorderRadius.circular(8),
@@ -297,7 +297,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 child: Text(
                   char,
                   style: GoogleFonts.jetBrainsMono(
-                    color: AppTheme.electricCyan,
+                    color: AppTheme.primaryWhite,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),

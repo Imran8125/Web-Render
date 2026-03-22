@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../models/web_app.dart';
+import '../services/app_state.dart';
 import '../theme/app_theme.dart';
 import 'preview_webview_native.dart' if (dart.library.html) 'preview_webview_web.dart';
 import 'storage_screen.dart';
@@ -28,6 +30,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final devMode = context.watch<AppState>().developerMode;
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -46,80 +49,84 @@ class _PreviewScreenState extends State<PreviewScreen> {
               'Preview',
               style: GoogleFonts.spaceGrotesk(
                 fontSize: 12,
-                color: AppTheme.lightSlate,
+                color: AppTheme.lightSilver,
               ),
             ),
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: _refresh,
-            tooltip: 'Refresh',
-            color: AppTheme.lightSlate,
-          ),
-          IconButton(
-            icon: const Icon(Icons.storage_rounded),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => StorageScreen(app: widget.app),
-              ),
+          if (devMode)
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded),
+              onPressed: _refresh,
+              tooltip: 'Refresh',
+              color: AppTheme.lightSilver,
             ),
-            tooltip: 'App Storage',
-            color: AppTheme.lightSlate,
-          ),
-          IconButton(
-            icon: const Icon(Icons.code_rounded),
-            onPressed: () => Navigator.pop(context),
-            tooltip: 'Edit Code',
-            color: AppTheme.lightSlate,
-          ),
+          if (devMode)
+            IconButton(
+              icon: const Icon(Icons.storage_rounded),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => StorageScreen(app: widget.app),
+                ),
+              ),
+              tooltip: 'App Storage',
+              color: AppTheme.lightSilver,
+            ),
+          if (devMode)
+            IconButton(
+              icon: const Icon(Icons.code_rounded),
+              onPressed: () => Navigator.pop(context),
+              tooltip: 'Edit Code',
+              color: AppTheme.lightSilver,
+            ),
         ],
       ),
       body: Column(
         children: [
-          // Device info bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            color: AppTheme.darkNavy,
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.phone_android,
-                  size: 14,
-                  color: AppTheme.lightSlate,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Preview Mode',
-                  style: GoogleFonts.spaceGrotesk(
-                    color: AppTheme.lightSlate,
-                    fontSize: 12,
+          // Device info bar (only in dev mode)
+          if (devMode)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              color: AppTheme.surfaceDark,
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.phone_android,
+                    size: 14,
+                    color: AppTheme.lightSilver,
                   ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.syntaxEmerald.withAlpha(30),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Running',
+                  const SizedBox(width: 6),
+                  Text(
+                    'Preview Mode',
                     style: GoogleFonts.spaceGrotesk(
-                      color: AppTheme.syntaxEmerald,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                      color: AppTheme.lightSilver,
+                      fontSize: 12,
                     ),
                   ),
-                ),
-              ],
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.syntax1.withAlpha(30),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Running',
+                      style: GoogleFonts.spaceGrotesk(
+                        color: AppTheme.syntax1,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
           // Rendered WebView / iframe content area
           Expanded(
             child: buildPreviewWidget(
@@ -129,64 +136,65 @@ class _PreviewScreenState extends State<PreviewScreen> {
               key: ValueKey('preview_${widget.app.id}'),
             ),
           ),
-          // Console panel
-          _buildConsolePanel(),
-          // Bottom action bar
-          SafeArea(
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.darkNavy,
-                border: Border(
-                  top: BorderSide(color: AppTheme.lightSlate.withAlpha(30)),
+          // Console panel (dev only)
+          if (devMode) _buildConsolePanel(),
+          // Bottom action bar (dev only)
+          if (devMode)
+            SafeArea(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceDark,
+                  border: Border(
+                    top: BorderSide(color: AppTheme.lightSilver.withAlpha(30)),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.code, size: 18),
+                        label: const Text('Edit Code'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.pureWhite,
+                          side: const BorderSide(color: AppTheme.lightSilver),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Share coming soon!',
+                                style: GoogleFonts.spaceGrotesk(),
+                              ),
+                              backgroundColor: AppTheme.elevatedGray,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.share, size: 18),
+                        label: const Text('Share'),
+                        style: FilledButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.code, size: 18),
-                      label: const Text('Edit Code'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.pureWhite,
-                        side: const BorderSide(color: AppTheme.lightSlate),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Share coming soon!',
-                              style: GoogleFonts.spaceGrotesk(),
-                            ),
-                            backgroundColor: AppTheme.elevatedDark,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.share, size: 18),
-                      label: const Text('Share'),
-                      style: FilledButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
-          ),
         ],
       ),
     );
@@ -205,7 +213,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
         decoration: BoxDecoration(
           color: AppTheme.editorBg,
           border: Border(
-            top: BorderSide(color: AppTheme.lightSlate.withAlpha(30)),
+            top: BorderSide(color: AppTheme.lightSilver.withAlpha(30)),
           ),
         ),
         child: Column(
@@ -218,13 +226,13 @@ class _PreviewScreenState extends State<PreviewScreen> {
                   const Icon(
                     Icons.terminal,
                     size: 16,
-                    color: AppTheme.lightSlate,
+                    color: AppTheme.lightSilver,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Console',
                     style: GoogleFonts.spaceGrotesk(
-                      color: AppTheme.lightSlate,
+                      color: AppTheme.lightSilver,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -233,7 +241,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
                   Text(
                     '$logCount logs',
                     style: GoogleFonts.spaceGrotesk(
-                      color: AppTheme.syntaxEmerald,
+                      color: AppTheme.syntax1,
                       fontSize: 11,
                     ),
                   ),
@@ -242,7 +250,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
                     '$errorCount errors',
                     style: GoogleFonts.spaceGrotesk(
                       color: errorCount > 0
-                          ? AppTheme.syntaxCoral
+                          ? AppTheme.errorColor
                           : AppTheme.syntaxGray,
                       fontSize: 11,
                     ),
@@ -252,7 +260,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
                     _consoleExpanded
                         ? Icons.keyboard_arrow_down
                         : Icons.keyboard_arrow_up,
-                    color: AppTheme.lightSlate,
+                    color: AppTheme.lightSilver,
                     size: 20,
                   ),
                 ],
@@ -282,8 +290,8 @@ class _PreviewScreenState extends State<PreviewScreen> {
                               log,
                               style: GoogleFonts.jetBrainsMono(
                                 color: isError
-                                    ? AppTheme.syntaxCoral
-                                    : AppTheme.syntaxEmerald,
+                                    ? AppTheme.errorColor
+                                    : AppTheme.syntax1,
                                 fontSize: 11,
                               ),
                             ),

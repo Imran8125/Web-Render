@@ -10,18 +10,26 @@ class AppState extends ChangeNotifier {
   List<WebApp> get apps => _apps;
   bool get isLoading => _isLoading;
 
+  bool _developerMode = false;
+  bool get developerMode => _developerMode;
+
+  void toggleDeveloperMode() {
+    _developerMode = !_developerMode;
+    notifyListeners();
+  }
+
   final _uuid = const Uuid();
 
-  // Predefined accent colors for app cards
+  // Predefined accent colors for app cards (Black/White/Silver)
   static const List<int> appColors = [
-    0xFF00D2FF, // Electric Cyan
-    0xFF7B2FF7, // Vibrant Purple
-    0xFFFF6B6B, // Coral
-    0xFF34D399, // Emerald
-    0xFFFBBF24, // Amber
-    0xFF38BDF8, // Sky Blue
-    0xFFEC4899, // Pink
-    0xFFF97316, // Orange
+    0xFFFFFFFF, // Pure White
+    0xFFE0E0E0, // Light Silver
+    0xFFD4D4D4, // Silver
+    0xFFA3A3A3, // Gray
+    0xFF737373, // Dark Gray
+    0xFF525252, // Deep Gray
+    0xFF404040, // Deeper Gray
+    0xFF262626, // Almost Black
   ];
 
   Future<void> loadApps() async {
@@ -81,8 +89,9 @@ class AppState extends ChangeNotifier {
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #000000;
+      color: #FFFFFF;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -90,44 +99,49 @@ class AppState extends ChangeNotifier {
     }
 
     .container {
-      background: white;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      background: #1A1A1A;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(255, 255, 255, 0.05);
+      border: 1px solid #333333;
       text-align: center;
-      max-width: 400px;
+      max-width: 420px;
       width: 90%;
     }
 
-    h1 { color: #1a1a2e; margin-bottom: 1rem; }
-    p  { color: #64748b; margin-bottom: 1rem; }
+    h1 { color: #FFFFFF; margin-bottom: 1rem; font-weight: 600; letter-spacing: -0.5px; }
+    p  { color: #A1A19A; margin-bottom: 1.5rem; line-height: 1.5; }
 
     button {
-      background: #00d2ff;
-      color: white;
+      background: #FFFFFF;
+      color: #000000;
       border: none;
       padding: 12px 32px;
       border-radius: 8px;
       font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: all 0.2s ease;
     }
-    button:hover { transform: scale(1.05); }
+    button:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+    }
 
-    #output { margin-top: 1rem; font-weight: bold; color: #7b2ff7; }
+    #output { margin-top: 1.5rem; font-weight: 500; color: #E0E0E0; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>$title</h1>
-    <p>Start building your app here!</p>
-    <button id="btn" onclick="greet()">Click Me</button>
+    <p>A sophisticated canvas for your next creation.</p>
+    <button id="btn" onclick="greet()">Initialize</button>
     <p id="output"></p>
   </div>
 
   <script>
     function greet() {
-      document.getElementById('output').textContent = 'Hello from Web-Render! 🚀';
+      document.getElementById('output').textContent = 'System initialized. ⚡';
     }
   </script>
 </body>

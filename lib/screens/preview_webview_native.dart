@@ -173,7 +173,7 @@ class _NativePreviewState extends State<_NativePreview> {
         WebViewWidget(controller: _controller),
         if (_isLoading)
           const Center(
-            child: CircularProgressIndicator(color: Color(0xFF00D2FF)),
+            child: CircularProgressIndicator(color: Color(0xFFFFFFFF)),
           ),
       ],
     );

@@ -46,7 +46,7 @@ class _StorageScreenState extends State<StorageScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Removed "$key"', style: GoogleFonts.spaceGrotesk()),
-          backgroundColor: AppTheme.elevatedDark,
+          backgroundColor: AppTheme.elevatedGray,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -64,17 +64,17 @@ class _StorageScreenState extends State<StorageScreen> {
         title: const Text('Clear All Storage'),
         content: Text(
           'Delete all ${_items.length} stored items for "${widget.app.title}"?',
-          style: const TextStyle(color: AppTheme.lightSlate),
+          style: const TextStyle(color: AppTheme.lightSilver),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel',
-                style: TextStyle(color: AppTheme.lightSlate)),
+                style: TextStyle(color: AppTheme.lightSilver)),
           ),
           FilledButton(
             style:
-                FilledButton.styleFrom(backgroundColor: AppTheme.syntaxCoral),
+                FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
             onPressed: () async {
               Navigator.pop(ctx);
               await _storage.clear();
@@ -93,7 +93,7 @@ class _StorageScreenState extends State<StorageScreen> {
       builder: (ctx) => AlertDialog(
         title: Text(key,
             style: GoogleFonts.jetBrainsMono(
-                color: AppTheme.electricCyan, fontSize: 14)),
+                color: AppTheme.primaryWhite, fontSize: 14)),
         content: SingleChildScrollView(
           child: Container(
             width: double.maxFinite,
@@ -116,7 +116,7 @@ class _StorageScreenState extends State<StorageScreen> {
           ),
           FilledButton(
             style:
-                FilledButton.styleFrom(backgroundColor: AppTheme.syntaxCoral),
+                FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
             onPressed: () {
               Navigator.pop(ctx);
               _deleteItem(key);
@@ -145,7 +145,7 @@ class _StorageScreenState extends State<StorageScreen> {
             Text(
               'Storage · $_formattedSize',
               style: GoogleFonts.spaceGrotesk(
-                  fontSize: 12, color: AppTheme.lightSlate),
+                  fontSize: 12, color: AppTheme.lightSilver),
             ),
           ],
         ),
@@ -155,20 +155,20 @@ class _StorageScreenState extends State<StorageScreen> {
             onPressed: _confirmClearAll,
             tooltip: 'Clear All',
             color: _items.isNotEmpty
-                ? AppTheme.syntaxCoral
+                ? AppTheme.errorColor
                 : AppTheme.syntaxGray,
           ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: _loadItems,
             tooltip: 'Refresh',
-            color: AppTheme.lightSlate,
+            color: AppTheme.lightSilver,
           ),
         ],
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.electricCyan))
+              child: CircularProgressIndicator(color: AppTheme.primaryWhite))
           : _items.isEmpty
               ? _buildEmptyState()
               : _buildItemsList(),
@@ -183,7 +183,7 @@ class _StorageScreenState extends State<StorageScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppTheme.elevatedDark.withAlpha(120),
+              color: AppTheme.elevatedGray.withAlpha(120),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.storage_rounded,
@@ -201,7 +201,7 @@ class _StorageScreenState extends State<StorageScreen> {
           Text(
             'This app hasn\'t stored anything in localStorage yet.',
             style: GoogleFonts.spaceGrotesk(
-                color: AppTheme.lightSlate, fontSize: 13),
+                color: AppTheme.lightSilver, fontSize: 13),
             textAlign: TextAlign.center,
           ),
         ],
@@ -223,14 +223,14 @@ class _StorageScreenState extends State<StorageScreen> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.elevatedDark.withAlpha(200),
+              color: AppTheme.elevatedGray.withAlpha(200),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.lightSlate.withAlpha(30)),
+              border: Border.all(color: AppTheme.lightSilver.withAlpha(30)),
             ),
             child: Row(
               children: [
                 const Icon(Icons.vpn_key_rounded,
-                    size: 16, color: AppTheme.electricCyan),
+                    size: 16, color: AppTheme.primaryWhite),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -239,7 +239,7 @@ class _StorageScreenState extends State<StorageScreen> {
                       Text(
                         key,
                         style: GoogleFonts.jetBrainsMono(
-                            color: AppTheme.electricCyan, fontSize: 13),
+                            color: AppTheme.primaryWhite, fontSize: 13),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -249,7 +249,7 @@ class _StorageScreenState extends State<StorageScreen> {
                             ? '${value.substring(0, 80)}...'
                             : value,
                         style: GoogleFonts.jetBrainsMono(
-                            color: AppTheme.lightSlate, fontSize: 11),
+                            color: AppTheme.lightSilver, fontSize: 11),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -259,7 +259,7 @@ class _StorageScreenState extends State<StorageScreen> {
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.delete_outline,
-                      size: 18, color: AppTheme.syntaxCoral),
+                      size: 18, color: AppTheme.errorColor),
                   onPressed: () => _deleteItem(key),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),

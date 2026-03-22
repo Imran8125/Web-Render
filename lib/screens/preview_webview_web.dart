@@ -12,14 +12,15 @@ Widget buildPreviewWidget({
   required String appId,
   Key? key,
 }) {
-  return _WebPreview(key: key, html: html, onLog: onLog);
+  return _WebPreview(key: key, html: html, onLog: onLog, appId: appId);
 }
 
 class _WebPreview extends StatefulWidget {
   final String html;
   final void Function(String) onLog;
+  final String appId;
 
-  const _WebPreview({super.key, required this.html, required this.onLog});
+  const _WebPreview({super.key, required this.html, required this.onLog, required this.appId});
 
   @override
   State<_WebPreview> createState() => _WebPreviewState();
@@ -31,7 +32,7 @@ class _WebPreviewState extends State<_WebPreview> {
   @override
   void initState() {
     super.initState();
-    _viewType = 'web-render-preview-${DateTime.now().millisecondsSinceEpoch}';
+    _viewType = 'web-render-preview-${widget.appId}-${DateTime.now().microsecondsSinceEpoch}';
     _registerView();
   }
 
@@ -41,7 +42,7 @@ class _WebPreviewState extends State<_WebPreview> {
         ..style.border = 'none'
         ..style.width = '100%'
         ..style.height = '100%'
-        ..style.backgroundColor = 'white'
+        ..style.backgroundColor = 'black'
         ..srcdoc = widget.html;
       return iframe;
     });
@@ -50,8 +51,8 @@ class _WebPreviewState extends State<_WebPreview> {
   @override
   void didUpdateWidget(covariant _WebPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.html != widget.html) {
-      _viewType = 'web-render-preview-${DateTime.now().millisecondsSinceEpoch}';
+    if (oldWidget.html != widget.html || oldWidget.appId != widget.appId) {
+      _viewType = 'web-render-preview-${widget.appId}-${DateTime.now().microsecondsSinceEpoch}';
       _registerView();
       setState(() {});
     }
