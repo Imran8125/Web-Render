@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/web_app.dart';
+import '../models/app_prompt.dart';
 import 'database_service.dart';
 
 class AppState extends ChangeNotifier {
   List<WebApp> _apps = [];
+  List<AppPrompt> _prompts = [];
   bool _isLoading = true;
 
   List<WebApp> get apps => _apps;
+  List<AppPrompt> get prompts => _prompts;
   bool get isLoading => _isLoading;
 
   bool _developerMode = false;
@@ -37,9 +40,50 @@ class AppState extends ChangeNotifier {
     notifyListeners();
 
     _apps = await DatabaseService.getAllApps();
+    _prompts = await DatabaseService.getAllPrompts();
+    if (_prompts.isEmpty) {
+      await _createDefaultPrompt();
+    }
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> _createDefaultPrompt() async {
+    final now = DateTime.now();
+    final prompt = AppPrompt(
+      id: _uuid.v4(),
+      title: 'Web App Builder',
+      content: '''Role: Act as an expert Senior Frontend Developer specializing in mobile-first, vanilla web development.
+
+Task: Create a fully functional, single-file mobile web app for [INSERT YOUR APP IDEA HERE, e.g., a minimalist Pomodoro Timer].
+
+Constraints:
+
+Tech Stack: Use only standard HTML5, CSS3, and Vanilla JavaScript. No external frameworks (React, Tailwind, etc.) or libraries.
+
+Mobile-First Design:
+- Optimize specifically for a portrait mobile viewport (375px to 425px width).
+- Include the viewport meta tag for proper scaling.
+- Implement a "bottom navigation" or "thumb-friendly" UI.
+- Use CSS safe-area-inset to account for mobile notches/home indicators.
+
+Interactivity:
+- Use touch-friendly button sizes (at least 44x44px).
+- Implement basic touch gestures or "Active" states for buttons to provide tactile feedback.
+- Prevent text selection and default browser "pull-to-refresh" if necessary for the app feel.
+
+Code Structure:
+- Provide the entire solution in a single code block (Internal CSS and JS within the HTML).
+- Use semantic HTML tags.
+- Ensure the JavaScript is clean, using ES6+ syntax.
+
+Visual Style: Clean, modern, and high-contrast (e.g., Apple Health or Google Material Design style).''',
+      createdAt: now,
+      updatedAt: now,
+    );
+    await DatabaseService.insertPrompt(prompt);
+    _prompts.add(prompt);
   }
 
   Future<WebApp> createApp(String title) async {
@@ -71,6 +115,40 @@ class AppState extends ChangeNotifier {
   Future<void> deleteApp(String id) async {
     await DatabaseService.deleteApp(id);
     _apps.removeWhere((a) => a.id == id);
+    notifyListeners();
+  }
+
+  // ══════════════════════════════════════════
+  // Prompts CRUD
+  // ══════════════════════════════════════════
+
+  Future<AppPrompt> createPrompt(String title, String content) async {
+    final now = DateTime.now();
+    final prompt = AppPrompt(
+      id: _uuid.v4(),
+      title: title,
+      content: content,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await DatabaseService.insertPrompt(prompt);
+    _prompts.insert(0, prompt);
+    notifyListeners();
+    return prompt;
+  }
+
+  Future<void> updatePrompt(AppPrompt prompt) async {
+    await DatabaseService.updatePrompt(prompt);
+    final index = _prompts.indexWhere((p) => p.id == prompt.id);
+    if (index != -1) {
+      _prompts[index] = prompt;
+      notifyListeners();
+    }
+  }
+
+  Future<void> deletePrompt(String id) async {
+    await DatabaseService.deletePrompt(id);
+    _prompts.removeWhere((p) => p.id == id);
     notifyListeners();
   }
 

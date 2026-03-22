@@ -3,6 +3,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import '../models/web_app.dart';
 
+import '../models/app_prompt.dart';
+
 /// Platform-adaptive database service.
 /// Uses sqflite for native platforms, in-memory for web.
 class DatabaseService {
@@ -12,13 +14,14 @@ class DatabaseService {
   // ─── In-memory fallback for web ───
   static final List<WebApp> _memoryStore = [];
   static final Map<String, Map<String, String>> _memoryKvStore = {};
+  static final List<AppPrompt> _memoryPrompts = [];
 
   static Future<Database> _getDatabase() async {
     if (_database != null) return _database!;
     final dbPath = await getDatabasesPath();
     _database = await openDatabase(
       p.join(dbPath, 'web_render.db'),
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE apps (
@@ -39,6 +42,15 @@ class DatabaseService {
             FOREIGN KEY (appId) REFERENCES apps(id) ON DELETE CASCADE
           )
         ''');
+        await db.execute('''
+          CREATE TABLE prompts (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            createdAt TEXT NOT NULL,
+            updatedAt TEXT NOT NULL
+          )
+        ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -49,6 +61,17 @@ class DatabaseService {
               value TEXT NOT NULL DEFAULT '',
               PRIMARY KEY (appId, key),
               FOREIGN KEY (appId) REFERENCES apps(id) ON DELETE CASCADE
+            )
+          ''');
+        }
+        if (oldVersion < 3) {
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS prompts (
+              id TEXT PRIMARY KEY,
+              title TEXT NOT NULL,
+              content TEXT NOT NULL,
+              createdAt TEXT NOT NULL,
+              updatedAt TEXT NOT NULL
             )
           ''');
         }
@@ -136,6 +159,55 @@ class DatabaseService {
     final db = await _getDatabase();
     // Foreign key cascade will delete app_storage rows too
     await db.delete('apps', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ══════════════════════════════════════════
+  //  Prompts CRUD
+  // ══════════════════════════════════════════
+
+  static Future<List<AppPrompt>> getAllPrompts() async {
+    await _ensureInitialized();
+    if (kIsWeb) {
+      return List.from(_memoryPrompts)
+        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    }
+    final db = await _getDatabase();
+    final maps = await db.query('prompts', orderBy: 'updatedAt DESC');
+    return maps.map((m) => AppPrompt.fromMap(m)).toList();
+  }
+
+  static Future<void> insertPrompt(AppPrompt prompt) async {
+    await _ensureInitialized();
+    if (kIsWeb) {
+      _memoryPrompts.add(prompt);
+      return;
+    }
+    final db = await _getDatabase();
+    await db.insert('prompts', prompt.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  static Future<void> updatePrompt(AppPrompt prompt) async {
+    await _ensureInitialized();
+    prompt.updatedAt = DateTime.now();
+    if (kIsWeb) {
+      final index = _memoryPrompts.indexWhere((p) => p.id == prompt.id);
+      if (index != -1) _memoryPrompts[index] = prompt;
+      return;
+    }
+    final db = await _getDatabase();
+    await db.update('prompts', prompt.toMap(),
+        where: 'id = ?', whereArgs: [prompt.id]);
+  }
+
+  static Future<void> deletePrompt(String id) async {
+    await _ensureInitialized();
+    if (kIsWeb) {
+      _memoryPrompts.removeWhere((p) => p.id == id);
+      return;
+    }
+    final db = await _getDatabase();
+    await db.delete('prompts', where: 'id = ?', whereArgs: [id]);
   }
 
   // ══════════════════════════════════════════

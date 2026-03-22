@@ -9,6 +9,7 @@ import 'preview_screen.dart';
 import 'preview_webview_native.dart' if (dart.library.html) 'preview_webview_web.dart';
 import 'settings_screen.dart';
 import 'storage_screen.dart';
+import 'templates_screen.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -134,6 +135,9 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_selectedNavIndex == 2) {
             return const SettingsScreen();
           }
+          if (_selectedNavIndex == 1) {
+            return const TemplatesScreen();
+          }
           if (state.isLoading) {
             return const Center(
               child: CircularProgressIndicator(color: AppTheme.primaryWhite),
@@ -142,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return _buildBody(state);
         },
       ),
-      floatingActionButton: Container(
+      floatingActionButton: _selectedNavIndex == 0 ? Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
@@ -159,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
           label: const Text('New App'),
           tooltip: 'Create New App',
         ),
-      ),
+      ) : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedNavIndex,
         onDestinationSelected: (i) => setState(() => _selectedNavIndex = i),
