@@ -9,8 +9,8 @@ on:
 jobs:
   build_release:
     name: Build and Release
-    # macOS runner is required to build for iOS
-    runs-on: macos-latest
+    # Ubuntu runner is sufficient and faster for Android builds
+    runs-on: ubuntu-latest
 
     permissions:
       contents: write # Required for creating GitHub Releases
@@ -41,19 +41,6 @@ jobs:
       - name: Build Android App Bundle (AAB)
         run: flutter build appbundle --release
 
-      # NOTE: For a real signed iOS app, you need to set up Apple Certificates and Provisioning Profiles.
-      # Without them, we can build an unsigned app just for testing or emulators.
-      - name: Build iOS Application (Unsigned)
-        run: flutter build ios --release --no-codesign
-
-      - name: Package iOS App as IPA
-        run: |
-          cd build/ios/iphoneos
-          mkdir Payload
-          cp -r Runner.app Payload
-          zip -r ../../app-unassigned.ipa Payload
-          cd ../../..
-          
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
@@ -64,6 +51,5 @@ jobs:
           files: |
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/bundle/release/app-release.aab
-            build/ios/app-unassigned.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
