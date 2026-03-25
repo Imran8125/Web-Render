@@ -1,13 +1,13 @@
-// Native implementation: renders HTML using webview_flutter + local HTTP server
+// Native implementation: renders HTML using flutter_inappwebview + local HTTP server
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
-import 'package:webview_flutter/webview_flutter.dart';
 import '../services/storage_service.dart';
 
-/// Builds a native WebView widget to render HTML content.
+/// Builds a native InAppWebView widget to render HTML content.
 Widget buildPreviewWidget({
   required String html,
   required void Function(String) onLog,
@@ -34,7 +34,7 @@ class _NativePreview extends StatefulWidget {
 }
 
 class _NativePreviewState extends State<_NativePreview> {
-  late WebViewController _controller;
+  InAppWebViewController? _controller;
   late StorageService _storage;
   bool _isLoading = true;
   HttpServer? _server;
@@ -44,7 +44,7 @@ class _NativePreviewState extends State<_NativePreview> {
   void initState() {
     super.initState();
     _storage = StorageService(widget.appId);
-    _startServerAndInit();
+    _startServer();
   }
 
   @override
@@ -53,7 +53,7 @@ class _NativePreviewState extends State<_NativePreview> {
     super.dispose();
   }
 
-  Future<void> _startServerAndInit() async {
+  Future<void> _startServer() async {
     // Pre-load all storage items for synchronous JS access
     final items = await _storage.getAllItems();
     final storageJson = jsonEncode(items);
@@ -65,7 +65,6 @@ class _NativePreviewState extends State<_NativePreview> {
         injectedHtml,
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
-          // Allow the page to fetch any origin
           'Access-Control-Allow-Origin': '*',
         },
       );
@@ -74,50 +73,6 @@ class _NativePreviewState extends State<_NativePreview> {
     _server = await shelf_io.serve(handler, InternetAddress.loopbackIPv4, 0);
     _port = _server!.port;
     debugPrint('Preview server running on http://127.0.0.1:$_port');
-
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(NavigationDelegate(
-        onPageFinished: (_) {
-          if (mounted) setState(() => _isLoading = false);
-        },
-        onNavigationRequest: (NavigationRequest request) {
-          // Let the preview page navigate freely (opens links, etc.)
-          return NavigationDecision.navigate;
-        },
-      ))
-      // Console capture channel
-      ..addJavaScriptChannel(
-        'ConsoleLog',
-        onMessageReceived: (message) {
-          widget.onLog(message.message);
-        },
-      )
-      // Storage bridge channels
-      ..addJavaScriptChannel(
-        'StorageSetItem',
-        onMessageReceived: (message) {
-          try {
-            final data = jsonDecode(message.message);
-            _storage.setItem(data['key'] as String, data['value'] as String);
-          } catch (e) {
-            debugPrint('StorageSetItem error: $e');
-          }
-        },
-      )
-      ..addJavaScriptChannel(
-        'StorageRemoveItem',
-        onMessageReceived: (message) {
-          _storage.removeItem(message.message);
-        },
-      )
-      ..addJavaScriptChannel(
-        'StorageClear',
-        onMessageReceived: (message) {
-          _storage.clear();
-        },
-      )
-      ..loadRequest(Uri.parse('http://127.0.0.1:$_port/'));
 
     if (mounted) setState(() {});
   }
@@ -130,15 +85,21 @@ class _NativePreviewState extends State<_NativePreview> {
   var origLog = console.log;
   console.log = function() {
     var args = Array.from(arguments).map(String).join(' ');
-    if (window.ConsoleLog) ConsoleLog.postMessage(args);
+    if (window.flutter_inappwebview) {
+      window.flutter_inappwebview.callHandler('ConsoleLog', args);
+    }
     origLog.apply(console, arguments);
   };
   console.error = function() {
     var args = Array.from(arguments).map(String).join(' ');
-    if (window.ConsoleLog) ConsoleLog.postMessage('[ERROR] ' + args);
+    if (window.flutter_inappwebview) {
+      window.flutter_inappwebview.callHandler('ConsoleLog', '[ERROR] ' + args);
+    }
   };
   window.onerror = function(msg) {
-    if (window.ConsoleLog) ConsoleLog.postMessage('[ERROR] ' + msg);
+    if (window.flutter_inappwebview) {
+      window.flutter_inappwebview.callHandler('ConsoleLog', '[ERROR] ' + msg);
+    }
   };
 
   // ── localStorage bridge ──
@@ -151,21 +112,21 @@ class _NativePreviewState extends State<_NativePreview> {
       key = String(key);
       value = String(value);
       _store[key] = value;
-      if (window.StorageSetItem) {
-        StorageSetItem.postMessage(JSON.stringify({key: key, value: value}));
+      if (window.flutter_inappwebview) {
+        window.flutter_inappwebview.callHandler('StorageSetItem', JSON.stringify({key: key, value: value}));
       }
     },
     removeItem: function(key) {
       key = String(key);
       delete _store[key];
-      if (window.StorageRemoveItem) {
-        StorageRemoveItem.postMessage(key);
+      if (window.flutter_inappwebview) {
+        window.flutter_inappwebview.callHandler('StorageRemoveItem', key);
       }
     },
     clear: function() {
       _store = {};
-      if (window.StorageClear) {
-        StorageClear.postMessage('clear');
+      if (window.flutter_inappwebview) {
+        window.flutter_inappwebview.callHandler('StorageClear', 'clear');
       }
     },
     get length() {
@@ -205,7 +166,73 @@ class _NativePreviewState extends State<_NativePreview> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        if (_port > 0) WebViewWidget(controller: _controller),
+        if (_port > 0)
+          InAppWebView(
+            initialUrlRequest: URLRequest(
+              url: WebUri('http://127.0.0.1:$_port/'),
+            ),
+            initialSettings: InAppWebViewSettings(
+              javaScriptEnabled: true,
+              mediaPlaybackRequiresUserGesture: false,
+              allowFileAccessFromFileURLs: true,
+              allowUniversalAccessFromFileURLs: true,
+              useHybridComposition: true,
+              // Allow mixed content (http:// resources from http:// origin)
+              mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+            ),
+            onWebViewCreated: (controller) {
+              _controller = controller;
+
+              // Console capture handler
+              controller.addJavaScriptHandler(
+                handlerName: 'ConsoleLog',
+                callback: (args) {
+                  if (args.isNotEmpty) widget.onLog(args[0].toString());
+                },
+              );
+
+              // Storage bridge handlers
+              controller.addJavaScriptHandler(
+                handlerName: 'StorageSetItem',
+                callback: (args) {
+                  if (args.isNotEmpty) {
+                    try {
+                      final data = jsonDecode(args[0].toString());
+                      _storage.setItem(
+                        data['key'] as String,
+                        data['value'] as String,
+                      );
+                    } catch (e) {
+                      debugPrint('StorageSetItem error: $e');
+                    }
+                  }
+                },
+              );
+
+              controller.addJavaScriptHandler(
+                handlerName: 'StorageRemoveItem',
+                callback: (args) {
+                  if (args.isNotEmpty) {
+                    _storage.removeItem(args[0].toString());
+                  }
+                },
+              );
+
+              controller.addJavaScriptHandler(
+                handlerName: 'StorageClear',
+                callback: (args) {
+                  _storage.clear();
+                },
+              );
+            },
+            onLoadStop: (controller, url) {
+              if (mounted) setState(() => _isLoading = false);
+            },
+            shouldOverrideUrlLoading: (controller, navigationAction) async {
+              // Let the preview page navigate freely
+              return NavigationActionPolicy.ALLOW;
+            },
+          ),
         if (_isLoading)
           const Center(
             child: CircularProgressIndicator(color: Color(0xFFFFFFFF)),
